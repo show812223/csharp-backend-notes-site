@@ -7,7 +7,7 @@ const STAGES = [
   { id: 'stage-1', num: '01', title: 'C# 語言核心', desc: '熟悉強型別語言特性與非同步處理邏輯' },
   { id: 'stage-2', num: '02', title: 'HTTP 與後端思維', desc: '從伺服器端視角重新理解 Web' },
   { id: 'stage-3', num: '03', title: 'ASP.NET Core Web API', desc: '理解後端服務的運作生命週期與架構設計' },
-  { id: 'stage-4', num: '04', title: '資料庫與 EF Core', desc: '掌握關聯式資料庫設計與 ORM 操作' },
+  { id: 'stage-4', num: '04', title: '資料庫：MySQL 與 MongoDB', desc: 'EF Core migration 流程是重點；NoSQL 與 RDB 的取捨' },
   { id: 'stage-5', num: '05', title: '程式碼架構', desc: '寫出可維護、可測試的分層架構' },
   { id: 'stage-6', num: '06', title: '後端測試', desc: '單元測試、Mocking、整合測試' },
   { id: 'stage-7', num: '07', title: 'Docker 基礎', desc: '容器化、Dockerfile、docker-compose' },
