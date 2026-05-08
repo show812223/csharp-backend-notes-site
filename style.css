@@ -655,6 +655,76 @@ body::before {
 }
 
 /* ================================================
+   Table of contents (right rail)
+   ================================================ */
+.toc-aside {
+  display: none;
+  font-family: var(--font-mono);
+}
+
+.toc-aside.show {
+  /* Only takes effect together with the >=1240 media query below */
+  display: block;
+}
+
+.toc-label {
+  font-size: 10px;
+  letter-spacing: 1.8px;
+  text-transform: uppercase;
+  color: var(--fg-muted);
+  margin-bottom: 12px;
+  padding-bottom: 10px;
+  border-bottom: 1px solid var(--border-soft);
+}
+
+.toc-list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  border-left: 2px solid var(--border-soft);
+}
+
+.toc-item {
+  margin: 0;
+}
+
+.toc-link {
+  display: block;
+  padding: 5px 12px;
+  margin-left: -2px;
+  border-left: 2px solid transparent;
+  color: var(--fg-muted);
+  text-decoration: none;
+  font-size: 12px;
+  line-height: 1.45;
+  transition: color 0.12s, border-color 0.12s;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.toc-link:hover {
+  color: var(--fg);
+  background: transparent;
+}
+
+.toc-link.active {
+  color: var(--fg);
+  border-left-color: var(--accent);
+  font-weight: 700;
+}
+
+.toc-link.h3 {
+  padding-left: 24px;
+  font-size: 11px;
+  color: var(--fg-muted);
+}
+
+.toc-link.h3.active {
+  color: var(--fg);
+}
+
+/* ================================================
    Page navigation (prev/next)
    ================================================ */
 .page-nav {
@@ -936,6 +1006,40 @@ body::before {
   color: var(--fg-muted);
   font-size: 14px;
   letter-spacing: 1px;
+}
+
+/* ================================================
+   Wide viewports: enable right-rail TOC layout
+   ================================================ */
+@media (min-width: 1280px) {
+  .main.has-toc {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) 200px;
+    column-gap: 48px;
+    align-items: start;
+  }
+
+  .main.has-toc .content {
+    grid-column: 1;
+    justify-self: center;
+    width: 100%;
+  }
+
+  .main.has-toc .page-nav,
+  .main.has-toc .footer {
+    grid-column: 1;
+  }
+
+  .main.has-toc .toc-aside {
+    grid-column: 2;
+    grid-row: 1;
+    position: sticky;
+    top: 60px;
+    max-height: calc(100vh - 100px);
+    overflow-y: auto;
+    padding-right: 4px;
+    align-self: start;
+  }
 }
 
 /* ================================================

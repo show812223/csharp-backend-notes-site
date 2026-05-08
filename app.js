@@ -25,6 +25,7 @@ const state = {
   markdownCache: {},
   searchIndex: null,
   searchActiveIdx: -1,
+  tocObserver: null,
 };
 
 // === Markdown setup ===
@@ -221,6 +222,140 @@ function postProcessContent(stageId) {
   });
 }
 
+// === Table of contents ===
+function slugify(text) {
+  let slug = text
+    .trim()
+    .toLowerCase()
+    .replace(/\s+/g, '-')
+    .replace(/[^\p{L}\p{N}\-]+/gu, '')
+    .replace(/-+/g, '-')
+    .replace(/^-|-$/g, '');
+  return slug || 'section';
+}
+
+function buildToc() {
+  const toc = document.getElementById('toc');
+  if (!toc) return;
+
+  const content = document.getElementById('content');
+  const headings = content.querySelectorAll('h2, h3');
+
+  if (headings.length === 0) {
+    toc.classList.remove('show');
+    toc.innerHTML = '';
+    if (state.tocObserver) {
+      state.tocObserver.disconnect();
+      state.tocObserver = null;
+    }
+    return;
+  }
+
+  const usedSlugs = {};
+  const items = [];
+  headings.forEach(h => {
+    let slug = slugify(h.textContent);
+    if (usedSlugs[slug]) {
+      usedSlugs[slug] += 1;
+      slug = `${slug}-${usedSlugs[slug]}`;
+    } else {
+      usedSlugs[slug] = 1;
+    }
+    h.id = slug;
+    items.push({
+      level: h.tagName === 'H2' ? 2 : 3,
+      text: h.textContent,
+      id: slug,
+    });
+  });
+
+  const escapeHtml = s => s.replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+
+  toc.innerHTML = `
+    <div class="toc-label">本頁目錄</div>
+    <ul class="toc-list">
+      ${items.map(it => `
+        <li class="toc-item">
+          <a href="#${encodeURIComponent(it.id)}"
+             class="toc-link h${it.level}"
+             data-target="${escapeHtml(it.id)}"
+             title="${escapeHtml(it.text)}">${escapeHtml(it.text)}</a>
+        </li>
+      `).join('')}
+    </ul>
+  `;
+  toc.classList.add('show');
+  document.getElementById('main').classList.add('has-toc');
+
+  toc.querySelectorAll('.toc-link').forEach(link => {
+    link.addEventListener('click', (e) => {
+      e.preventDefault();
+      const id = link.dataset.target;
+      const el = document.getElementById(id);
+      if (!el) return;
+      const offset = window.matchMedia('(max-width: 900px)').matches ? 76 : 24;
+      const top = el.getBoundingClientRect().top + window.scrollY - offset;
+      window.scrollTo({ top, behavior: 'smooth' });
+    });
+  });
+
+  setupTocActiveTracking(items);
+}
+
+function setupTocActiveTracking(items) {
+  if (state.tocObserver) state.tocObserver.disconnect();
+  if (!('IntersectionObserver' in window)) return;
+
+  const visible = new Set();
+  const observer = new IntersectionObserver((entries) => {
+    entries.forEach(entry => {
+      if (entry.isIntersecting) visible.add(entry.target.id);
+      else visible.delete(entry.target.id);
+    });
+
+    let activeId = null;
+    for (const it of items) {
+      if (visible.has(it.id)) { activeId = it.id; break; }
+    }
+    if (!activeId) {
+      // None in the active band — pick last one above the band
+      const links = document.querySelectorAll('.toc-link');
+      let last = null;
+      for (const it of items) {
+        const el = document.getElementById(it.id);
+        if (!el) continue;
+        if (el.getBoundingClientRect().top < 120) last = it.id;
+      }
+      activeId = last;
+    }
+
+    document.querySelectorAll('.toc-link').forEach(l => {
+      l.classList.toggle('active', l.dataset.target === activeId);
+    });
+  }, {
+    rootMargin: '-80px 0px -70% 0px',
+    threshold: 0,
+  });
+
+  items.forEach(it => {
+    const el = document.getElementById(it.id);
+    if (el) observer.observe(el);
+  });
+  state.tocObserver = observer;
+}
+
+function clearToc() {
+  const toc = document.getElementById('toc');
+  if (!toc) return;
+  toc.classList.remove('show');
+  toc.innerHTML = '';
+  document.getElementById('main').classList.remove('has-toc');
+  if (state.tocObserver) {
+    state.tocObserver.disconnect();
+    state.tocObserver = null;
+  }
+}
+
 function renderPageNav(stageId) {
   const idx = STAGES.findIndex(s => s.id === stageId);
   if (idx === -1) {
@@ -263,6 +398,7 @@ function renderPageNav(stageId) {
 async function loadStage(stageId) {
   const content = document.getElementById('content');
   content.innerHTML = '<div class="loading">載入中…</div>';
+  clearToc();
 
   const md = await loadMarkdown(stageId);
   if (!md) {
@@ -273,6 +409,7 @@ async function loadStage(stageId) {
   content.innerHTML = renderMarkdown(md, stageId);
   postProcessContent(stageId);
   renderPageNav(stageId);
+  buildToc();
 
   window.scrollTo(0, 0);
 }
@@ -338,6 +475,7 @@ function renderHome() {
   `;
 
   document.getElementById('page-nav').innerHTML = '';
+  clearToc();
   updateAllProgressBadges();
   window.scrollTo(0, 0);
 }
