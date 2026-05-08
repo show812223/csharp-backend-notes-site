@@ -6,7 +6,7 @@ https://show812223.github.io/csharp-backend-notes-site/
 
 ## 功能
 
-- 八階段學習內容（C# → ASP.NET Core → EF Core → 架構 → 測試 → Docker → CI/CD）
+- 八階段學習內容（C# → ASP.NET Core → MySQL/MongoDB → 架構 → 測試 → Docker → CI/CD）
 - 全文搜尋（按 Cmd/Ctrl + K）
 - 進度追蹤（各階段任務 checkbox 自動存到 localStorage）
 - 深色 / 淺色模式（會記住偏好）
