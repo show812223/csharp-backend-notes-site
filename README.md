@@ -2,6 +2,8 @@
 
 前端工程師轉後端的 C# 學習資料站，可離線部署、行動裝置友善。
 
+https://show812223.github.io/csharp-backend-notes-site/
+
 ## 功能
 
 - 八階段學習內容（C# → ASP.NET Core → EF Core → 架構 → 測試 → Docker → CI/CD）
